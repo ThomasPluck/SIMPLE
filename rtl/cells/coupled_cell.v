@@ -53,6 +53,22 @@ module coupled_cell #(parameter NUM_WEIGHTS = 15,
         assign weight_oh[i] = (weight == i);
     end endgenerate
 
+    // Watch for incoming edges from din
+    wire de;
+    buffer #(NUM_LUTS) ddbuf(.in(din),.out(de));
+    wire din_edge;
+    assign din_edge = din ^ de;
+    // And also from se
+    wire se;
+    buffer #(NUM_LUTS) sdbuf(.in(sout),.out(se));
+    wire sout_edge = sout ^ se;
+
+    // Count number of incoming edges
+    reg [$clog2(NUM_WEIGHTS)-1:0] edge_count;
+    always @(posedge din_edge or posedge sout_edge) begin
+        edge_count += 1;
+    end
+
     // If coupling is positive, we want to slow down the destination
     // oscillator when it doesn't match the source oscillator, and speed it up
     // otherwise.
@@ -60,8 +76,8 @@ module coupled_cell #(parameter NUM_WEIGHTS = 15,
     // If coupling is negative, we want to slow down the destination
     // oscillator when it does match the source oscillator, and speed it up
     // otherwise.
-   
-    assign mismatch_d  = sout ^ din;
+
+    assign mismatch_d  = edge_count[$clog2(NUM_WEIGHTS)-1];
     
     wire [NUM_WEIGHTS-1:0] d_buf;
   
