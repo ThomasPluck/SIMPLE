@@ -61,7 +61,7 @@ module coupled_cell #(parameter NUM_WEIGHTS = 15,
     // And also from se
     wire se;
     buffer #(NUM_LUTS) sdbuf(.in(sout),.out(se));
-    wire sout_edge = sout ^ se;
+    assign sout_edge = sout ^ se;
 
     // Count number of incoming edges
     reg [$clog2(NUM_WEIGHTS)-1:0] edge_count;
